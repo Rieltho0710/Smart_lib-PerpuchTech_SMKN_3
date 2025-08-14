@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Perpustakaan Digital - SMA Negeri 1 Jakarta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .nav-link:hover {
+            border-bottom: 2px solid #3b82f6;
+        }
+        .search-box:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+<!-- Navbar -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img src="logo.png" alt="Logo Perpustakaan Digital" class="h-8 w-8 rounded-full">
+                        <span class="ml-2 text-xl font-bold text-blue-600">PerpusDigi SMA 1 Jakarta</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#home" class="nav-link">Beranda</a>
+                        <a href="#katalog" class="nav-link">Katalog</a>
+                        <a href="#fitur" class="nav-link">Fitur</a>
+                        <a href="#about" class="nav-link">Tentang Kami</a>
+                        <a href="#admin" class="nav-link">Admin</a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
+                    <div id="userGreeting" class="hidden text-sm">
+                        <span class="font-medium"></span>
+                        <button id="logoutBtn" class="ml-2 text-blue-600">Keluar</button>
+                    </div>
+                    <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">Masuk/Daftar</button>
+                    <button id="accountBtn" class="hidden bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-user-circle mr-1"></i>Akun
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black bg-opacity-50">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+                <div class="flex justify-between items-center p-4 border-b">
+                    <h3 class="text-lg font-medium" id="authModalTitle">Masuk ke Akun</h3>
+                    <button id="closeAuthModal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div id="loginForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="loginEmail" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Password</label>
+                            <input type="password" id="loginPassword" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <button id="submitLogin" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Masuk</button>
+                        <p class="text-center text-sm text-gray-600">
+                            Belum punya akun? 
+                            <button id="switchToRegister" class="text-blue-600 hover:text-blue-800">Daftar disini</button>
+                        </p>
+                    </div>
+
+                    <div id="registerForm" class="hidden space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nama Depan</label>
+                                <input type="text" id="firstName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nama Belakang</label>
+                                <input type="text" id="lastName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="registerEmail" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Password</label>
+                            <input type="password" id="registerPassword" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <button id="submitRegister" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Daftar</button>
+                        <p class="text-center text-sm text-gray-600">
+                            Sudah punya akun? 
+                            <button id="switchToLogin" class="text-blue-600 hover:text-blue-800">Masuk disini</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Mobile menu 
+      <div class="sm:hidden hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="#home" class="bg-blue-50 border-blue-500 text-blue-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Beranda</a>
+                <a href="#katalog" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Katalog</a>
+                <a href="#fitur" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Fitur</a>
+                <a href="#about" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Tentang Kami</a>
+                <button id="mobileLoginBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium mt-2 ml-3">Masuk</button>
+            </div>
+        </div>
+    </nav>-->
+
+    <!-- Hero Section -->
+    <section id="home" class="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6">Selamat Datang di Perpustakaan Digital</h1>
+                    <p class="text-xl mb-8">Sistem modern untuk SMA Negeri 1 Jakarta yang memudahkan akses ke koleksi buku digital dan manajemen peminjaman.</p>
+                    <div class="flex space-x-4">
+                        <a href="#katalog" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">Jelajahi Katalog</a>
+                        <button id="learnMoreBtn" class="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition duration-300">Pelajari Lebih Lanjut</button>
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/5f8e0bc3-f9d0-4bd3-8f72-03fdac1429ca.png" alt="Gambar ilustrasi perpustakaan digital dengan siswa sedang membaca buku elektronik di tablet" class="rounded-lg shadow-xl">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fitur Unggulan -->
+    <section id="fitur" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Fitur Unggulan Kami</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Fitur 1 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-600 mb-4">
+                        <i class="fas fa-search text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Pencarian Canggih</h3>
+                    <p class="text-gray-600">Temukan buku dengan mudah menggunakan sistem pencarian yang canggih berdasarkan judul, pengarang, subjek, atau kata kunci.</p>
+                </div>
+                
+                <!-- Fitur 2 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-600 mb-4">
+                        <i class="fas fa-book-open text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Peminjaman Online</h3>
+                    <p class="text-gray-600">Pinjam buku secara online dengan batas waktu otomatis dan notifikasi pengingat pengembalian melalui email.</p>
+                </div>
+                
+                <!-- Fitur 3 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-600 mb-4">
+                        <i class="fas fa-chart-line text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Dashboard Admin</h3>
+                    <p class="text-gray-600">Kelola inventaris buku dan anggota perpustakaan dengan mudah melalui dashboard admin yang lengkap.</p>
+                </div>
+                
+                <!-- Fitur 4 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-600 mb-4">
+                        <i class="fas fa-bell text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Notifikasi Otomatis</h3>
+                    <p class="text-gray-600">Dapatkan pengingat pengembalian buku secara otomatis melalui email dan notifikasi sistem.</p>
+                </div>
+                
+                <!-- Fitur 5 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-600 mb-4">
+                        <i class="fas fa-book text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Katalog Digital</h3>
+                    <p class="text-gray-600">Akses katalog buku digital dengan berbagai kategori dan informasi lengkap tentang setiap buku.</p>
+                </div>
+                
+                <!-- Fitur 6 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-600 mb-4">
+                        <i class="fas fa-file-alt text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Laporan Statistik</h3>
+                    <p class="text-gray-600">Pantau aktivitas perpustakaan dengan laporan statistik penggunaan yang lengkap dan mudah dipahami.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Katalog Buku -->
+    <section id="katalog" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Katalog Buku Digital</h2>
+            
+            <div class="mb-8 flex flex-col sm:flex-row gap-4">
+                <div class="relative flex-grow">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" id="searchInput" class="search-box block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Cari buku, pengarang, atau subjek...">
+                </div>
+                <select id="filterCategory" class="block w-full sm:w-auto pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                    <option value="">Semua Kategori</option>
+                    <option value="pelajaran">Buku Pelajaran</option>
+                    <option value="fiksi">Fiksi</option>
+                    <option value="non-fiksi">Non-Fiksi</option>
+                    <option value="referensi">Referensi</option>
+                    <option value="bahasa">Bahasa Asing</option>
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="bookContainer">
+                <!-- Contoh Buku 1 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300 hover:cursor-pointer">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/21d909d1-943a-4d08-93f8-f4a9065c2552.png" alt="Sampul buku pelajaran fisika dengan ilustrasi rumus-rumus fisika" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Fisika untuk SMA Kelas 12</h3>
+                        <p class="text-gray-600 text-sm mb-2">Oleh: Dr. Ahmad Santoso</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Pelajaran</span>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Pinjam</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contoh Buku 2 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300 hover:cursor-pointer">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e818b056-fb9d-4d77-bbfd-84c89efb8898.png" alt="Sampul buku kumpulan puisi dengan desain abstrak" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Kumpulan Puisi Modern</h3>
+                        <p class="text-gray-600 text-sm mb-2">Oleh: Chairil Anwar</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Fiksi</span>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Pinjam</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contoh Buku 3 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300 hover:cursor-pointer">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/81f4cfd5-ca72-4f1a-8a8e-52a6a3ebc1ec.png" alt="Sampul buku sejarah Indonesia dengan gambar dokumenter bersejarah" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Sejarah Indonesia Modern</h3>
+                        <p class="text-gray-600 text-sm mb-2">Oleh: Prof. Bambang Purwanto</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">Non-Fiksi</span>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Pinjam</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contoh Buku 4 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300 hover:cursor-pointer">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/a2107de3-893e-4920-b7bd-cf80fb57ad68.png" alt="Sampul buku belajar bahasa Inggris dengan ilustrasi bendera Inggris" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Panduan Lengkap TOEFL</h3>
+                        <p class="text-gray-600 text-sm mb-2">Oleh: Tim English Expert</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">Bahasa</span>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Pinjam</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contoh Buku 5 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300 hover:cursor-pointer">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/61d50506-086e-41d3-9a94-b82dbb7ad052.png" alt="Sampul buku matematika dengan simbol-simbol matematika" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Matematika SMA Kelas 10</h3>
+                        <p class="text-gray-600 text-sm mb-2">Oleh: Dr. Sri Mulyani</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Pelajaran</span>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Pinjam</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contoh Buku 6 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300 hover:cursor-pointer">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/6abafa61-6c4d-4455-bade-3e1717dd1d00.png" alt="Sampul buku biografi tokoh terkenal dengan potret hitam putih" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Biografi B.J. Habibie</h3>
+                        <p class="text-gray-600 text-sm mb-2">Oleh: A. Makmur Makka</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">Non-Fiksi</span>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Pinjam</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contoh Buku 7 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300 hover:cursor-pointer">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/2041f803-0e70-43ce-9f1d-c233ac3a4575.png" alt="Sampul buku pemrograman dengan ilustrasi kode komputer" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Dasar Pemrograman Python</h3>
+                        <p class="text-gray-600 text-sm mb-2">Oleh: Bill Lubanovic</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">Referensi</span>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Pinjam</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contoh Buku 8 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300 hover:cursor-pointer">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/b24d2629-9f34-4143-b355-42990733c921.png" alt="Sampul novel remaja dengan ilustrasi pemandangan perkotaan" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Ronggeng Dukuh Paruk</h3>
+                        <p class="text-gray-600 text-sm mb-2">Oleh: Ahmad Tohari</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Fiksi</span>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Pinjam</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex justify-center">
+                <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium">Lihat Lebih Banyak</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">​</span>
+            
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">Masuk ke Akun Anda</h3>
+                            <div class="mt-2">
+                                <form id="loginForm">
+                                    <div class="mb-4">
+                                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                                        <input type="email" id="email" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                                        <input type="password" id="password" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                            <label for="remember-me" class="ml-2 block text-sm text-gray-900">Ingat saya</label>
+                                        </div>
+                                        <div class="text-sm">
+                                            <a href="#" class="font-medium text-blue-600 hover:text-blue-500">Lupa password?</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Masuk
+                    </button>
+                    <button type="button" id="closeLoginModal" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard (Hidden by Default) -->
+    <section id="adminDashboard" class="py-16 bg-white hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold mb-8 text-gray-800">Dashboard Admin</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-blue-50 p-6 rounded-lg shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                            <i class="fas fa-book text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total Buku</p>
+                            <p class="text-2xl font-semibold text-gray-800">1,245</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-green-50 p-6 rounded-lg shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                            <i class="fas fa-users text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Anggota Aktif</p>
+                            <p class="text-2xl font-semibold text-gray-800">1,864</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-purple-50 p-6 rounded-lg shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+                            <i class="fas fa-exchange-alt text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Peminjaman Bulan Ini</p>
+                            <p class="text-2xl font-semibold text-gray-800">382</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Statistik Peminjaman</h3>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <canvas id="borrowingChart" height="300"></canvas>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Distribusi Kategori Buku</h3>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <canvas id="bookCategoryChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Daftar Peminjaman Terbaru</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul Buku</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Peminjam</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pinjam</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Kembali</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Matematika SMA Kelas 10</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Ahmad Fauzi (XII IPA 3)</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">20/06/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">27/06/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Fisika untuk SMA Kelas 12</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Maria Ulfa (XII IPA 1)</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">15/06/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">22/06/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Akan Kadaluarsa</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Kumpulan Puisi Modern</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Budi Santoso (XI IPS 2)</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10/06/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">17/06/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Terlambat</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Menampilkan <span class="font-medium">1</span> sampai <span class="font-medium">3</span> dari <span class="font-medium">382</span> peminjaman
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Previous</span>
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                                <a href="#" aria-current="page" class="z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    1
+                                </a>
+                                <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    2
+                                </a>
+                                <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    3
+                                </a>
+                                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Next</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+  
+   <!-- Admin Dashboard 
+  <section id="admin" class="py-16 bg-white hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold mb-8 text-gray-800">Dashboard Admin</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Manajemen Buku</h3>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-md">Tambah Buku</button>
+                    <button class="bg-yellow-600 text-white px-4 py-2 rounded-md">Edit Buku</button>
+                    <button class="bg-red-600 text-white px-4 py-2 rounded-md">Hapus Buku</button>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Manajemen Anggota</h3>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-md">Daftar Anggota</button>
+                    <button class="bg-yellow-600 text-white px-4 py-2 rounded-md">Aktifkan Anggota</button>
+                    <button class="bg-red-600 text-white px-4 py-2 rounded-md">Non-Aktifkan Anggota</button>
+                </div>
+            </div>
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Statistik Peminjaman</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul Buku</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Peminjam</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pinjam</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Kembali</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            (Data peminjaman akan ditampilkan di sini)
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section> -->
+    
+   <!-- Book Details Modal -->
+    <div id="bookDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black bg-opacity-50">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                <div class="flex justify-between items-center p-4 border-b">
+                    <h3 class="text-lg font-medium">Detail Buku</h3>
+                    <button id="closeBookModal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex justify-center">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/ba833acf-4634-4076-bc89-e2f5962ddd55.png" alt="Sampul buku" class="max-h-96 rounded-md">
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold mb-2" id="bookDetailTitle">Judul Buku</h2>
+                        <p class="text-gray-600 mb-4" id="bookDetailAuthor">Oleh: Pengarang</p>
+                        <div class="flex items-center mb-4 text-yellow-400">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            <span class="ml-2 text-gray-600">(12 ulasan)</span>
+                        </div>
+                        <div class="mb-4">
+                            <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-2">Kategori</span>
+                            <span class="text-gray-600">120 halaman</span>
+                        </div>
+                        <p class="text-gray-700 mb-6" id="bookDetailDescription">
+                            Deskripsi buku akan ditampilkan di sini. Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                            Nullam in dui mauris. Vivamus tincidunt consequat porta.
+                        </p>
+                        <button class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 mb-4">Pinjam Buku</button>
+                        <div class="bg-gray-50 p-4 rounded-md">
+                            <h4 class="font-medium mb-2">Berikan Ulasan</h4>
+                            <div class="flex items-center mb-2">
+                                <div class="rating-stars text-2xl">
+                                    <i class="far fa-star" data-rating="1"></i>
+                                    <i class="far fa-star" data-rating="2"></i>
+                                    <i class="far fa-star" data-rating="3"></i>
+                                    <i class="far fa-star" data-rating="4"></i>
+                                    <i class="far fa-star" data-rating="5"></i>
+                                </div>
+                                <span class="ml-2 text-gray-600 text-sm">Pilih rating</span>
+                            </div>
+                            <textarea class="w-full border rounded-md p-2 text-sm" placeholder="Tulis ulasan Anda..."></textarea>
+                            <button class="mt-2 bg-blue-600 text-white px-4 py-1 rounded-md text-sm">Kirim Ulasan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tentang Kami -->
+    <section id="about" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4 text-gray-800">Tentang Perpustakaan Digital</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Platform modern untuk memudahkan akses literasi di SMA Negeri 1 Jakarta</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/ebf472df-c0b9-41d9-aa64-12b0fb4e953f.png" alt="Gambar interior perpustakaan SMA dengan rak buku dan area belajar" class="rounded-lg shadow-xl">
+                </div>
+                
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Visi dan Misi</h3>
+                    <p class="text-gray-600 mb-6">Sistem Perpustakaan Digital SMA Negeri 1 Jakarta bertujuan untuk menyediakan akses mudah dan luas terhadap koleksi buku digital bagi seluruh siswa dan staf pengajar, mendukung proses belajar mengajar yang lebih efektif dan menyenangkan.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-gray-600">Memodernisasi sistem manajemen perpustakaan sekolah</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-gray-600">Mempermudah proses peminjaman dan pengembalian buku</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-gray-600">Meningkatkan minat baca siswa melalui akses digital</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-gray-600">Menyediakan laporan statistik untuk evaluasi koleksi dan layanan</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+  
+
+   
+  <!-- Transaction History -->
+    <section id="history" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Riwayat Peminjaman</h2>
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul Buku</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pinjam</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batas Kembali</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Matematika SMA Kelas 10</td>
+                                <td class="px-6 py-4 whitespace-nowrap">15 Jan 2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">22 Jan 2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Dikembalikan
+                                    </span>
+                                </td>
+                            </tr>
+                            <!-- More history rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white pt-12 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Perpustakaan Digital</h3>
+                    <p class="text-gray-300 mb-4">Platform digital untuk manajemen perpustakaan SMA Negeri 1 Jakarta.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Tautan Cepat</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-gray-300 hover:text-white">Beranda</a></li>
+                        <li><a href="#katalog" class="text-gray-300 hover:text-white">Katalog Buku</a></li>
+                        <li><a href="#fitur" class="text-gray-300 hover:text-white">Fitur</a></li>
+                        <li><a href="#about" class="text-gray-300 hover:text-white">Tentang Kami</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Kontak</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span class="text-gray-300">Jl. Pendidikan No. 1, Jakarta</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone-alt mr-2"></i>
+                            <span class="text-gray-300">(021) 12345678</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <span class="text-gray-300">perpustakaan@sman1jakarta.sch.id</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8 text-sm text-gray-400 text-center">
+                <p>© 2023 Sistem Perpustakaan Digital SMA Negeri 1 Jakarta. Dibuat untuk TIK.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.querySelector('[aria-controls="mobile-menu"]');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            const expanded = mobileMenuBtn.getAttribute('aria-expanded') === 'true';
+            mobileMenuBtn.setAttribute('aria-expanded', !expanded);
+            mobileMenu.classList.toggle('hidden');
+            mobileMenuBtn.innerHTML = expanded 
+                ? '<span class="sr-only">Buka menu utama</span><i class="fas fa-bars"></i>' 
+                : '<span class="sr-only">Tutup menu utama</span><i class="fas fa-times"></i>';
+        });
+
+        // Login modal
+        const loginBtn = document.getElementById('loginBtn');
+        const mobileLoginBtn = document.getElementById('mobileLoginBtn');
+        const loginModal = document.getElementById('loginModal');
+        const closeLoginModal = document.getElementById('closeLoginModal');
+        
+        const toggleModal = () => {
+            loginModal.classList.toggle('hidden');
+        };
+        
+        loginBtn.addEventListener('click', toggleModal);
+        mobileLoginBtn.addEventListener('click', toggleModal);
+        closeLoginModal.addEventListener('click', toggleModal);
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const filterCategory = document.getElementById('filterCategory');
+        const bookCards = document.querySelectorAll('.book-card');
+        
+        searchInput.addEventListener('input', filterBooks);
+        filterCategory.addEventListener('change', filterBooks);
+        
+        function filterBooks() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const category = filterCategory.value.toLowerCase();
+            
+            bookCards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const author = card.querySelector('p:nth-of-type(1)').textContent.toLowerCase();
+                const categoryText = card.querySelector('span').textContent.toLowerCase();
+                
+                const matchesSearch = title.includes(searchTerm) || author.includes(searchTerm);
+                const matchesCategory = category === '' || categoryText.includes(category);
+                
+                if (matchesSearch && matchesCategory) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        // Admin dashboard charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Borrowing chart
+            const borrowingCtx = document.getElementById('borrowingChart').getContext('2d');
+            const borrowingChart = new Chart(borrowingCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Peminjaman Buku',
+                        data: [120, 190, 150, 200, 170, 210, 250, 220, 190, 230, 270, 300],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Book category chart
+            const categoryCtx = document.getElementById('bookCategoryChart').getContext('2d');
+            const categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pelajaran', 'Fiksi', 'Non-Fiksi', 'Referensi', 'Bahasa Asing'],
+                    datasets: [{
+                        data: [45, 20, 15, 10, 10],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        });
+        
+        // Admin login simulation (for demo purposes)
+        const loginForm = document.getElementById('loginForm');
+        const adminDashboard = document.getElementById('adminDashboard');
+        
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Demo credentials
+            if (email === 'admin@sman1jakarta.sch.id' && password === 'admin123') {
+                toggleModal();
+                adminDashboard.classList.remove('hidden');
+                // Scroll to admin dashboard
+                setTimeout(() => {
+                    adminDashboard.scrollIntoView({ behavior: 'smooth' });
+                }, 300);
+                
+                // Show success alert
+                alert('Login berhasil! Anda sekarang dapat mengakses dashboard admin.');
+            } else {
+                alert('Email atau password salah. Coba lagi.');
+            }
+        });
+    </script>
+</body>
+</html>
